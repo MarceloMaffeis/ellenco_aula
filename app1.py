@@ -296,7 +296,7 @@ elif menu == "💬 Assistente RAG (Manutenção)":
             api_key = st.text_input("🔑 Chave da API", type="password") # type="password" oculta os caracteres digitados
         with col2:
             endpoint = st.text_input("🔗 Endpoint", value="https://marcelomaffeis-05082026-resource.services.ai.azure.com/openai/v1")
-        modelo_azure = st.text_input("🧠 Nome do Deployment", value="gpt-5.4-mini")
+        modelo_azure = st.text_input("🧠 Nome do Deployment", value="gpt-4.1-mini")
     
     st.markdown("---")
     
