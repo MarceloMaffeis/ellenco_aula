@@ -1,0 +1,61 @@
+
+================================================================================
+MANUAL TÉCNICO DE MANUTENÇÃO E FALHAS - EQUIPAMENTOS PESADOS
+Revisão: 2.1 | Setor: Engenharia e Manutenção
+================================================================================
+
+Este documento descreve os códigos de erro, diagnósticos e custos estimados 
+para manutenção corretiva e preventiva das máquinas no canteiro de obras.
+
+--------------------------------------------------------------------------------
+EQUIPAMENTO: BETONEIRA 400L (SÉRIE B)
+--------------------------------------------------------------------------------
+[CÓDIGO E-404] Superaquecimento do Motor Principal
+- Sintoma: Desligamento abrupto após 30 minutos de uso contínuo, cheiro de queimado.
+- Causa Comum: Excesso de carga (traço muito seco) ou falha nas aletas de ventilação do motor.
+- Ação Recomendada: Parar o equipamento por 40 minutos. Limpar aletas de ventilação. Se persistir, substituir o relé térmico.
+- Tempo Estimado de Reparo: 1.5 horas.
+- Custo Médio (Peças + Mão de Obra): R$ 450,00.
+
+[CÓDIGO B-102] Tambor Estático com Motor Girando
+- Sintoma: Motor funciona, mas o tambor de mistura não gira.
+- Causa Comum: Correia de transmissão frouxa ou rompida.
+- Ação Recomendada: Abrir o compartimento lateral, remover correia danificada e instalar nova correia (Perfil A-45). Ajustar o tensionador.
+- Tempo Estimado de Reparo: 45 minutos.
+- Custo Médio (Peças + Mão de Obra): R$ 120,00.
+
+--------------------------------------------------------------------------------
+EQUIPAMENTO: RETROESCAVADEIRA (SÉRIE R-900)
+--------------------------------------------------------------------------------
+[CÓDIGO HYD-01] Perda de Pressão Hidráulica na Pá Dianteira
+- Sintoma: Movimento da pá lento ou sem força para levantar carga.
+- Causa Comum: Vazamento em mangueira de alta pressão ou nível baixo de óleo hidráulico.
+- Ação Recomendada: Inspecionar circuito em busca de vazamentos. Substituir mangueira rompida e completar com fluido ISO 46.
+- Tempo Estimado de Reparo: 3 horas.
+- Custo Médio (Peças + Mão de Obra): R$ 850,00.
+- Nível de Risco: ALTO (Risco de queda de carga).
+
+[CÓDIGO ENG-99] Motor "Engasgando" sob Carga
+- Sintoma: Motor diesel perde rotação e emite fumaça preta excessiva ao forçar.
+- Causa Comum: Filtro de combustível obstruído por diesel contaminado ou água no tanque.
+- Ação Recomendada: Substituir filtros primário e secundário de diesel. Drenar a água do decantador e sangrar o sistema.
+- Tempo Estimado de Reparo: 2 horas.
+- Custo Médio (Peças + Mão de Obra): R$ 320,00.
+
+--------------------------------------------------------------------------------
+EQUIPAMENTO: GUINDASTE DE TORRE (GRUAS)
+--------------------------------------------------------------------------------
+[CÓDIGO BRK-00] Falha no Freio de Elevação (Guincho)
+- Sintoma: Carga deslizando para baixo mesmo com o joystick na posição neutra.
+- Causa Comum: Desgaste severo das pastilhas de freio do motor de elevação.
+- Ação Recomendada: INTERDIÇÃO IMEDIATA. Bloquear a máquina. Substituir conjunto de pastilhas de freio e recalibrar a mola de pressão técnica.
+- Tempo Estimado de Reparo: 6 horas.
+- Custo Médio (Peças + Mão de Obra): R$ 3.500,00.
+- Nível de Risco: CRÍTICO (Risco de acidente fatal).
+
+[CÓDIGO WND-05] Alerta de Anemômetro
+- Sintoma: Alarme sonoro contínuo na cabine e bloqueio de movimentação.
+- Causa Comum: Rajadas de vento superiores a 60 km/h ou sensor do anemômetro danificado no topo da torre.
+- Ação Recomendada: Verificar aplicativo de clima. Se não houver vento forte, substituir a hélice do sensor do anemômetro.
+- Tempo Estimado de Reparo: 2 horas.
+- Custo Médio (Peças + Mão de Obra): R$ 1.200,00.
