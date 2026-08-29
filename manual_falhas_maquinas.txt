@@ -1,11 +1,12 @@
-
 ================================================================================
 MANUAL TÉCNICO DE MANUTENÇÃO E FALHAS - EQUIPAMENTOS PESADOS
-Revisão: 2.1 | Setor: Engenharia e Manutenção
+Revisão: 3.0 | Setor: Engenharia e Manutenção
+Nota Técnica: Procedimentos alinhados às normativas de segurança (NR-12 e NR-18).
 ================================================================================
 
 Este documento descreve os códigos de erro, diagnósticos e custos estimados 
-para manutenção corretiva e preventiva das máquinas no canteiro de obras.
+para manutenção corretiva e preventiva das máquinas no canteiro de obras, 
+incluindo responsabilidades de execução.
 
 --------------------------------------------------------------------------------
 EQUIPAMENTO: BETONEIRA 400L (SÉRIE B)
@@ -16,6 +17,8 @@ EQUIPAMENTO: BETONEIRA 400L (SÉRIE B)
 - Ação Recomendada: Parar o equipamento por 40 minutos. Limpar aletas de ventilação. Se persistir, substituir o relé térmico.
 - Tempo Estimado de Reparo: 1.5 horas.
 - Custo Médio (Peças + Mão de Obra): R$ 450,00.
+- Responsável: Eletricista de Manutenção.
+- Tipo de Manutenção: Interno.
 
 [CÓDIGO B-102] Tambor Estático com Motor Girando
 - Sintoma: Motor funciona, mas o tambor de mistura não gira.
@@ -23,6 +26,8 @@ EQUIPAMENTO: BETONEIRA 400L (SÉRIE B)
 - Ação Recomendada: Abrir o compartimento lateral, remover correia danificada e instalar nova correia (Perfil A-45). Ajustar o tensionador.
 - Tempo Estimado de Reparo: 45 minutos.
 - Custo Médio (Peças + Mão de Obra): R$ 120,00.
+- Responsável: Mecânico Base.
+- Tipo de Manutenção: Interno.
 
 --------------------------------------------------------------------------------
 EQUIPAMENTO: RETROESCAVADEIRA (SÉRIE R-900)
@@ -33,6 +38,8 @@ EQUIPAMENTO: RETROESCAVADEIRA (SÉRIE R-900)
 - Ação Recomendada: Inspecionar circuito em busca de vazamentos. Substituir mangueira rompida e completar com fluido ISO 46.
 - Tempo Estimado de Reparo: 3 horas.
 - Custo Médio (Peças + Mão de Obra): R$ 850,00.
+- Responsável: Especialista Hidráulico.
+- Tipo de Manutenção: Externo (Terceirizado).
 - Nível de Risco: ALTO (Risco de queda de carga).
 
 [CÓDIGO ENG-99] Motor "Engasgando" sob Carga
@@ -41,6 +48,8 @@ EQUIPAMENTO: RETROESCAVADEIRA (SÉRIE R-900)
 - Ação Recomendada: Substituir filtros primário e secundário de diesel. Drenar a água do decantador e sangrar o sistema.
 - Tempo Estimado de Reparo: 2 horas.
 - Custo Médio (Peças + Mão de Obra): R$ 320,00.
+- Responsável: Mecânico de Máquinas Pesadas.
+- Tipo de Manutenção: Interno.
 
 --------------------------------------------------------------------------------
 EQUIPAMENTO: GUINDASTE DE TORRE (GRUAS)
@@ -51,6 +60,8 @@ EQUIPAMENTO: GUINDASTE DE TORRE (GRUAS)
 - Ação Recomendada: INTERDIÇÃO IMEDIATA. Bloquear a máquina. Substituir conjunto de pastilhas de freio e recalibrar a mola de pressão técnica.
 - Tempo Estimado de Reparo: 6 horas.
 - Custo Médio (Peças + Mão de Obra): R$ 3.500,00.
+- Responsável: Engenheiro Mecânico / Equipe Autorizada.
+- Tipo de Manutenção: Externo (Representante do Fabricante).
 - Nível de Risco: CRÍTICO (Risco de acidente fatal).
 
 [CÓDIGO WND-05] Alerta de Anemômetro
@@ -59,3 +70,62 @@ EQUIPAMENTO: GUINDASTE DE TORRE (GRUAS)
 - Ação Recomendada: Verificar aplicativo de clima. Se não houver vento forte, substituir a hélice do sensor do anemômetro.
 - Tempo Estimado de Reparo: 2 horas.
 - Custo Médio (Peças + Mão de Obra): R$ 1.200,00.
+- Responsável: Técnico Eletromecânico.
+- Tipo de Manutenção: Interno.
+
+--------------------------------------------------------------------------------
+EQUIPAMENTO: ROLO COMPACTADOR VIBRATÓRIO (SÉRIE V-200)
+--------------------------------------------------------------------------------
+[CÓDIGO VIB-22] Falha no Sistema de Vibração
+- Sintoma: O equipamento se desloca normalmente, mas o cilindro não vibra ao acionar o comando.
+- Causa Comum: Bobina solenoide da válvula de vibração queimada ou chicote elétrico rompido.
+- Ação Recomendada: Medir continuidade do chicote elétrico. Se normal, substituir a bobina solenoide no bloco hidráulico.
+- Tempo Estimado de Reparo: 2.5 horas.
+- Custo Médio (Peças + Mão de Obra): R$ 680,00.
+- Responsável: Eletromecânico.
+- Tipo de Manutenção: Interno.
+- Nível de Risco: MÉDIO (Comprometimento da qualidade da compactação do solo).
+
+[CÓDIGO TRN-14] Superaquecimento do Sistema Hidrostático
+- Sintoma: Alarme de temperatura no painel e perda de força na subida de rampas.
+- Causa Comum: Radiador de óleo hidráulico obstruído por poeira e barro.
+- Ação Recomendada: Lavar as aletas do radiador com jato de água de baixa pressão. Verificar nível do fluido hidráulico.
+- Tempo Estimado de Reparo: 1.5 horas.
+- Custo Médio (Peças + Mão de Obra): R$ 150,00.
+- Responsável: Auxiliar de Manutenção / Lubrificador.
+- Tipo de Manutenção: Interno.
+
+--------------------------------------------------------------------------------
+EQUIPAMENTO: PLATAFORMA ELEVATÓRIA TESOURA (SÉRIE PT-12)
+--------------------------------------------------------------------------------
+[CÓDIGO BATT-04] Bateria Não Retém Carga
+- Sintoma: Plataforma perde força na elevação ou acusa bateria fraca após apenas 2 horas de uso.
+- Causa Comum: Nível de água desmineralizada abaixo do mínimo ou baterias sulfatadas por falta de recarga completa.
+- Ação Recomendada: Completar água desmineralizada nos vasos (nunca usar água comum ou solução de bateria). Realizar ciclo de carga de equalização por 12 horas.
+- Tempo Estimado de Reparo: 1 hora de mão de obra + 12 horas de equipamento parado.
+- Custo Médio (Peças + Mão de Obra): R$ 250,00 (Manutenção preventiva) / R$ 4.200,00 (Se necessitar troca do banco de baterias).
+- Responsável: Técnico de Manutenção Elétrica.
+- Tipo de Manutenção: Interno (Manutenção) / Externo (Troca).
+- Nível de Risco: BAIXO (Apenas impacto na produtividade).
+
+[CÓDIGO TILT-01] Alarme de Inclinação Acionado
+- Sintoma: Máquina emite bipe contínuo e impede a elevação da tesoura, permitindo apenas a descida.
+- Causa Comum: Máquina posicionada em terreno com inclinação superior a 3 graus ou sensor de inclinação (tilt sensor) descalibrado.
+- Ação Recomendada: Reposicionar a plataforma em piso nivelado. Se o erro persistir em piso plano, calibrar o sensor via módulo de diagnóstico.
+- Tempo Estimado de Reparo: 1 hora.
+- Custo Médio (Peças + Mão de Obra): R$ 400,00.
+- Responsável: Técnico de Automação/Mecatrônica.
+- Tipo de Manutenção: Externo (Representante da Locadora/Fabricante).
+- Nível de Risco: ALTO (Risco de tombamento se o sensor falhar em piso inclinado).
+
+--------------------------------------------------------------------------------
+EQUIPAMENTO: MINI CARREGADEIRA (SÉRIE SKID-50)
+--------------------------------------------------------------------------------
+[CÓDIGO JOY-09] Desvio de Trajetória / Falha de Translação
+- Sintoma: Máquina puxa para um dos lados ao tentar andar em linha reta, resposta lenta do joystick.
+- Causa Comum: Desgaste no embuchamento do joystick ou sujeira na válvula piloto do sistema hidrostático.
+- Ação Recomendada: Desmontar o console do joystick, limpar contatos e inspecionar bloco de válvulas. Realizar calibração eletrônica.
+- Tempo Estimado de Reparo: 4 horas.
+- Custo Médio (Peças + Mão de Obra): R$ 1.100,00.
+- Responsável: Especialista Hidráulico/Eletrônico.
+- Tipo de Manutenção: Externo (Oficina Autorizada).
