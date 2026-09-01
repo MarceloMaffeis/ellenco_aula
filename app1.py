@@ -1,366 +1,339 @@
 # ====================================================================
-# IMPORTAÇÃO DE BIBLIOTECAS (O "Kit de Ferramentas" do Desenvolvedor)
+# SMARTBUILDER IA - ELLENCO ENGENHARIA
+# Sistema Integrado de Inteligência Técnica e Operacional
 # ====================================================================
-import streamlit as st                  # Para criar a interface gráfica (Dashboards) na web
-import pandas as pd                     # Para ler, manipular e analisar tabelas de dados (DataFrames)
-import matplotlib.pyplot as plt         # Para criar gráficos básicos (não interativos)
-import seaborn as sns                   # Para criar gráficos estatísticos mais bonitos (baseado no matplotlib)
-import plotly.express as px             # Para criar gráficos avançados e interativos
-import plotly.graph_objects as go       # Para adicionar camadas complexas aos gráficos do Plotly
-from sklearn.linear_model import LinearRegression     # Algoritmo de IA para prever números (Regressão)
-from sklearn.tree import DecisionTreeClassifier       # Algoritmo de IA para categorizar dados (Classificação)
-from sklearn.cluster import KMeans                    # Algoritmo de IA para agrupar dados semelhantes (Clusterização)
-from sklearn.metrics import r2_score, mean_absolute_error # Ferramentas para medir acertos em Regressão
-from sklearn.metrics import accuracy_score, confusion_matrix # Ferramentas para medir acertos em Classificação
-from openai import OpenAI               # Biblioteca para conectar com IAs Generativas (como o ChatGPT na Azure)
+import streamlit as st
+import pandas as pd
+import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
+
+# Algoritmos e Métricas de Machine Learning
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import r2_score, mean_absolute_error, accuracy_score, confusion_matrix
+
+from openai import OpenAI
 
 # ====================================================================
-# CONFIGURAÇÃO GERAL DA PÁGINA
+# CONFIGURAÇÃO DA PÁGINA
 # ====================================================================
-# Define o nome que aparece na aba do navegador, o ícone e o layout expandido para usar toda a tela
-st.set_page_config(page_title="Sistema de Obras IA", page_icon="🏗️", layout="wide")
+st.set_page_config(page_title="Ellenco - SmartBuilder IA", page_icon="🏗️", layout="wide")
 
 # ====================================================================
-# MENU LATERAL (SIDEBAR) - NAVEGAÇÃO DO SISTEMA
+# CACHE E MODELOS (BOAS PRÁTICAS DE PERFORMANCE)
 # ====================================================================
+@st.cache_data
+def carregar_dados_regressao():
+    try:
+        return pd.read_csv('concreto_resistencia.csv')
+    except FileNotFoundError:
+        return None
+
+@st.cache_data
+def carregar_dados_classificacao():
+    try:
+        return pd.read_csv('inspecao_seguranca.csv')
+    except FileNotFoundError:
+        return None
+
+@st.cache_data
+def carregar_dados_cluster():
+    try:
+        return pd.read_csv('gestao_canteiros.csv')
+    except FileNotFoundError:
+        return None
+
+# ====================================================================
+# MENU LATERAL
+# ====================================================================
+st.sidebar.image("https://via.placeholder.com/250x70.png?text=ELLENCO+ENG", use_container_width=True)
 st.sidebar.title("🏗️ SmartBuilder IA")
-st.sidebar.markdown("Sistema Integrado de Gestão e Manutenção")
+st.sidebar.caption("Plataforma de Engenharia Orientada a Dados")
 
-# st.sidebar.radio cria os botões para o usuário escolher a página
 menu = st.sidebar.radio(
-    "Selecione o Módulo:",
+    "Módulos Operacionais:",
     [
         "🏠 Início", 
-        "📈 Regressão (Concreto)", 
-        "🚦 Classificação (Segurança)", 
-        "📊 Clusterização (Canteiros)", 
-        "💬 Assistente RAG (Manutenção)"
+        "📈 Dosagem & Resistência (Concreto)", 
+        "🚦 Patologia & Risco Estrutural", 
+        "📊 Clusterização & Performance de Obras", 
+        "💬 Assistente Técnico de Manutenção"
     ]
 )
-
-st.sidebar.markdown("---") # Cria uma linha divisória
-st.sidebar.caption("SENAI - Projeto Final de Inteligência Artificial")
+st.sidebar.markdown("---")
+st.sidebar.info("Compatível com diretrizes ABNT NBR 12655 / NBR 6118.")
 
 # ====================================================================
-# MÓDULO 0: INÍCIO (TELA DE BOAS-VINDAS)
+# MÓDULO 0: INÍCIO
 # ====================================================================
 if menu == "🏠 Início":
-    st.title("Bem-vindo ao SmartBuilder IA 🚀")
-    st.info("Utilize o menu lateral para navegar entre os módulos de Inteligência Artificial.")
+    st.title("Sistema de Gestão Preditiva e Manutenção - Ellenco")
     st.markdown("""
-    **O que este sistema faz?**
-    * Previsão de resistência de materiais (Machine Learning Clássico)
-    * Análise de risco estrutural (Classificação)
-    * Descoberta de perfis de canteiros (Clusterização)
-    * Chatbot especialista em manutenção (IA Generativa RAG)
+    Este ambiente integra **Ciência de Dados** e normas técnicas de **Engenharia Civil**:
+    
+    * **Previsão de $f_{ck}$:** Modelagem não-linear baseada na relação $a/c$ (Lei de Abrams) e tempo de cura.
+    * **Inspeção Estrutural:** Avaliação de risco baseada em limites normativos de abertura de fissura e perda de seção de aço.
+    * **Auditoria de Canteiros:** Clusterização multivariável normalizada para comparação justa entre frentes de obra.
+    * **Manutenção Especializada:** Chatbot assistente para resolução rápida de códigos de falha de equipamentos pesados.
     """)
 
 # ====================================================================
-# MÓDULO 1: REGRESSÃO (PREVENDO NÚMEROS CONTÍNUOS)
+# MÓDULO 1: REGRESSÃO (CONCRETO / LEI DE ABRAMS)
 # ====================================================================
-elif menu == "📈 Regressão (Concreto)":
-    st.title("📈 Previsão de Resistência do Concreto")
-    try:
-        # Tenta carregar o banco de dados. Se o arquivo não existir, pula para o 'except'
-        df_regressao = pd.read_csv('concreto_resistencia.csv')
+elif menu == "📈 Dosagem & Resistência (Concreto)":
+    st.title("📈 Previsão Tecnológica da Resistência do Concreto ($f_c$)")
+    st.caption("Modelagem não-linear com Random Forest considerando Fator Água/Cimento ($a/c$)")
+    
+    df_reg = carregar_dados_regressao()
+    
+    if df_reg is None:
+        st.error("⚠️ Arquivo 'concreto_resistencia.csv' não encontrado.")
+    else:
+        aba_dados, aba_simulador, aba_metricas = st.tabs(["📂 Dados de Ensaio", "⚙️ Simulador de Traço", "📊 Validação do Modelo"])
         
-        # st.tabs organiza o conteúdo em abas clicáveis para deixar a tela mais limpa
-        aba_dados, aba_simulador, aba_metricas = st.tabs(["📂 Base de Dados", "⚙️ Simulador de IA", "📊 Confiabilidade da IA"])
+        # Engenharia de Features (Física dos Materiais)
+        df_reg['Fator_AC'] = df_reg['Agua_L'] / df_reg['Cimento_kg']
+        df_reg['Log_Cura'] = np.log1p(df_reg['Tempo_Cura_dias'])
         
-        # --- PASSO 1: PREPARAÇÃO DA IA ---
-        # Separamos os dados: 'X' são as "perguntas" (ingredientes) e 'y' é a "resposta" (resistência final)
-        X = df_regressao[['Cimento_kg', 'Agua_L', 'Aditivo_ml', 'Tempo_Cura_dias']]
-        y = df_regressao['Resistencia_MPa']
+        features = ['Cimento_kg', 'Agua_L', 'Aditivo_ml', 'Tempo_Cura_dias', 'Fator_AC', 'Log_Cura']
+        X = df_reg[features]
+        y = df_reg['Resistencia_MPa']
         
-        # Inicializa o robô matemático e manda ele aprender (.fit) a relação entre ingredientes e resistência
-        modelo_regressao = LinearRegression()
-        modelo_regressao.fit(X, y)
+        # Divisão Treino e Teste para evitar overfitting
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
         
-        # --- ABA 1: MOSTRANDO A TABELA BRUTA ---
+        modelo_concreto = RandomForestRegressor(n_estimators=100, max_depth=6, random_state=42)
+        modelo_concreto.fit(X_train, y_train)
+        
         with aba_dados:
-            st.write("Visualização dos dados reais coletados no laboratório:")
-            st.dataframe(df_regressao, use_container_width=True) # Exibe a tabela do Pandas no Streamlit
+            st.markdown("### Resultados de Ruptura de Corpos de Prova")
+            st.dataframe(df_reg, use_container_width=True)
             
-        # --- ABA 2: O SIMULADOR INTERATIVO ---
         with aba_simulador:
-            st.write("Ajuste as proporções do traço para prever a resistência final do concreto.")
-            
-            # st.columns divide a tela em blocos lado a lado
             col1, col2 = st.columns(2)
             with col1:
-                # Cria botões deslizantes para o usuário inserir os dados
-                cimento_input = st.slider("Cimento (kg)", 200, 450, 300)
-                agua_input = st.slider("Água (Litros)", 150, 220, 180)
-            with col2:
-                aditivo_input = st.slider("Aditivo (ml)", 0, 50, 20)
-                # Cria um menu suspenso para escolher o tempo de cura
-                cura_input = st.selectbox("Tempo de Cura (dias)", [7, 14, 28, 56], index=2)
+                cimento = st.slider("Consumo de Cimento (kg/m³)", 200, 500, 320, step=10)
+                agua = st.slider("Água de Amassamento (Litros)", 140, 240, 175, step=5)
+                fator_ac_calc = agua / cimento
+                st.info(f"🧪 **Fator Água/Cimento ($a/c$) Calculado:** `{fator_ac_calc:.2f}`")
                 
-            st.markdown("---")
-            # Quando o botão for clicado, o bloco de código abaixo é executado
-            if st.button("Calcular Resistência", type="primary"):
-                # 1. Monta uma nova "tabelinha" apenas com os dados que o usuário digitou
-                novo_traco = pd.DataFrame({
-                    'Cimento_kg': [cimento_input], 
-                    'Agua_L': [agua_input], 
-                    'Aditivo_ml': [aditivo_input], 
-                    'Tempo_Cura_dias': [cura_input]
+            with col2:
+                aditivo = st.slider("Aditivo Plastificante (ml/kg de cimento)", 0, 50, 15)
+                idade_cura = st.selectbox("Idade de Controle / Cura (dias)", [3, 7, 14, 28, 56, 90], index=3)
+                
+            if st.button("Calcular Resistência Estimada", type="primary"):
+                novo_ponto = pd.DataFrame({
+                    'Cimento_kg': [cimento],
+                    'Agua_L': [agua],
+                    'Aditivo_ml': [aditivo],
+                    'Tempo_Cura_dias': [idade_cura],
+                    'Fator_AC': [fator_ac_calc],
+                    'Log_Cura': [np.log1p(idade_cura)]
                 })
-                # 2. Pede para a IA prever o resultado baseado no que ela aprendeu (.predict)
-                nova_previsao = modelo_regressao.predict(novo_traco)
-                # 3. Mostra o resultado na tela limitando a 2 casas decimais (.2f)
-                st.success(f"🧪 A resistência estimada pela IA é de **{nova_previsao[0]:.2f} MPa**")
+                previsao = modelo_concreto.predict(novo_ponto)[0]
                 
-        # --- ABA 3: AUDITORIA E MÉTRICAS ---
-        with aba_metricas:
-            st.markdown("### Diagnóstico Técnico da Inteligência Artificial")
-            st.write("Avaliação de desempenho comparando as previsões da IA com os resultados reais do laboratório.")
-            
-            # Para testar a IA, pedimos para ela prever tudo o que está na base de dados
-            previsoes_totais = modelo_regressao.predict(X)
-            
-            # Calculamos a taxa de acerto global (R2) e a margem de erro média (MAE)
-            taxa_acerto_r2 = r2_score(y, previsoes_totais)
-            margem_erro_mae = mean_absolute_error(y, previsoes_totais)
-            
-            # Mostramos esses números em formato de 'cartões' em destaque (st.metric)
-            col_met1, col_met2 = st.columns(2)
-            col_met1.metric(label="Precisão do Modelo (R²)", value=f"{taxa_acerto_r2 * 100:.1f}%")
-            col_met2.metric(label="Margem de Erro (MAE)", value=f"± {margem_erro_mae:.2f} MPa", delta_color="inverse")
-            
-            st.markdown("---")
-            
-            # Montamos uma tabela temporária para criar o gráfico comparativo
-            df_metricas = pd.DataFrame({'Real': y, 'Previsto': previsoes_totais})
-            
-            # px.scatter cria o gráfico interativo de bolhas
-            fig_reg = px.scatter(
-                df_metricas, x='Real', y='Previsto', 
-                title='Teste de Laboratório vs. Previsão da IA',
-                labels={'Real': 'Resistência Real', 'Previsto': 'Resistência Prevista'},
-                color_discrete_sequence=['#ef553b']
-            )
-            
-            # Adicionamos uma linha guia. Se a bolha cai em cima da linha, a IA acertou 100%
-            fig_reg.add_shape(type="line", line=dict(dash="dash", color="gray", width=2), x0=y.min(), y0=y.min(), x1=y.max(), y1=y.max())
-            st.plotly_chart(fig_reg, use_container_width=True)
-
-    except FileNotFoundError:
-        st.error("⚠️ Erro: O arquivo 'concreto_resistencia.csv' não foi encontrado na mesma pasta do script.")
-
-# ====================================================================
-# MÓDULO 2: CLASSIFICAÇÃO (PREVENDO CATEGORIAS)
-# ====================================================================
-elif menu == "🚦 Classificação (Segurança)":
-    st.title("🚦 Inspeção de Risco Estrutural")
-    try:
-        df_classificacao = pd.read_csv('inspecao_seguranca.csv')
-        aba_dados, aba_semaforo, aba_metricas = st.tabs(["📂 Base de Dados", "🚨 Painel de Risco", "📊 Confiabilidade da IA"])
-        
-        # --- PASSO 1: PREPARAÇÃO DA IA ---
-        # 'X' são as anomalias detectadas; 'y' é o nível de risco atribuído (0, 1 ou 2)
-        X_class = df_classificacao[['Fissura_mm', 'Corrosao_mm', 'Idade_Estrutura_anos']]
-        y_class = df_classificacao['Status_Risco']
-        
-        # Inicializa o modelo de Árvore de Decisão e realiza o treinamento (.fit)
-        modelo_arvore = DecisionTreeClassifier(random_state=42) # random_state garante que o resultado será sempre o mesmo (reprodutível)
-        modelo_arvore.fit(X_class, y_class)
-        
-        with aba_dados:
-            st.write("Histórico de vistorias estruturais passadas:")
-            df_visual = df_classificacao.copy()
-            # Traduz os números (0, 1, 2) para palavras compreensíveis na tabela
-            mapa_cores = {0: "🟢 Seguro", 1: "🟡 Monitorar", 2: "🔴 Interditar"}
-            df_visual['Alerta'] = df_visual['Status_Risco'].map(mapa_cores)
-            st.dataframe(df_visual, use_container_width=True)
-            
-        with aba_semaforo:
-            st.write("Insira os dados da vistoria atual para avaliação de risco.")
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                # st.number_input permite digitar um número decimal com passos específicos (step)
-                fissura_input = st.number_input("Fissura (mm)", min_value=0.0, max_value=15.0, value=1.0, step=0.1)
-            with col2:
-                corrosao_input = st.number_input("Corrosão (mm)", min_value=0.0, max_value=20.0, value=2.0, step=0.1)
-            with col3:
-                idade_input = st.number_input("Idade (anos)", min_value=1, max_value=100, value=15, step=1)
-                
-            st.markdown("---")
-            if st.button("Avaliar Risco", type="primary"):
-                # Cria a tabela com os dados digitados respeitando exatamente o nome das colunas do CSV
-                nova_inspecao = pd.DataFrame({'Fissura_mm': [fissura_input], 'Corrosao_mm': [corrosao_input], 'Idade_Estrutura_anos': [idade_input]})
-                
-                # A IA analisa a tabela e devolve a previsão
-                previsao_risco = modelo_arvore.predict(nova_inspecao)[0]
-                
-                # Regras de exibição condicional baseadas na resposta da IA
-                if previsao_risco == 0:
-                    st.success("🟢 **STATUS: SEGURO**")
-                elif previsao_risco == 1:
-                    st.warning("🟡 **STATUS: MONITORAR**")
-                else:
-                    st.error("🔴 **STATUS: INTERDITAR!**")
+                col_res1, col_res2 = st.columns(2)
+                col_res1.success(f"### Resistência Prevista: **{previsao:.2f} MPa**")
+                if idade_cura == 28:
+                    col_res2.metric("Classe Estimada", f"C{int(np.floor(previsao))}")
                     
         with aba_metricas:
-            st.markdown("### Diagnóstico Técnico (Matriz de Confusão)")
+            y_pred_test = modelo_concreto.predict(X_test)
+            r2 = r2_score(y_test, y_pred_test)
+            mae = mean_absolute_error(y_test, y_pred_test)
             
-            # Testa a IA gerando previsões para todos os dados conhecidos
-            previsoes_class = modelo_arvore.predict(X_class)
+            col_m1, col_m2 = st.columns(2)
+            col_m1.metric("Aderência Real (R² em Teste)", f"{r2 * 100:.1f}%")
+            col_m2.metric("Margem Média de Erro (MAE)", f"± {mae:.2f} MPa")
             
-            # Calcula quantos % a IA acertou globalmente
-            acuracia = accuracy_score(y_class, previsoes_class)
-            st.metric(label="Acurácia Geral", value=f"{acuracia * 100:.1f}%")
-            
-            # A matriz de confusão cruza o "Previsão" com o "Real" para vermos os Falsos Positivos/Negativos
-            matriz = confusion_matrix(y_class, previsoes_class)
-            categorias = ["Seguro", "Monitorar", "Interditar"]
-            
-            # px.imshow gera um gráfico de calor (Heatmap) interativo para a matriz
-            fig_matriz = px.imshow(
-                matriz,
-                labels=dict(x="Previsão da IA", y="Realidade", color="Volume"),
-                x=categorias, y=categorias, text_auto=True, color_continuous_scale="Reds"
+            fig = px.scatter(
+                x=y_test, y=y_pred_test,
+                labels={'x': 'Resistência Real em Laboratório (MPa)', 'y': 'Previsão do Modelo (MPa)'},
+                title="Curva de Aferição: Real vs. Previsto (Base de Teste Não Vista)",
+                color_discrete_sequence=['#0055A5']
             )
-            st.plotly_chart(fig_matriz, use_container_width=True)
-            st.info("⚠️ Nota Técnica: A acurácia de 100% ocorre porque o modelo está sendo avaliado nos mesmos dados usados no treinamento (Base de Treino). Em produção, utilizaríamos a técnica 'train_test_split'.")
-            
-    except FileNotFoundError:
-        st.error("⚠️ Arquivo 'inspecao_seguranca.csv' não encontrado.")
+            fig.add_shape(type="line", line=dict(dash="dash", color="gray"), x0=y.min(), y0=y.min(), x1=y.max(), y1=y.max())
+            st.plotly_chart(fig, use_container_width=True)
 
 # ====================================================================
-# MÓDULO 3: CLUSTERIZAÇÃO (AGRUPAMENTO POR COMPORTAMENTO)
+# MÓDULO 2: CLASSIFICAÇÃO (RISCO ESTRUTURAL / NBR 6118)
 # ====================================================================
-elif menu == "📊 Clusterização (Canteiros)":
-    st.title("📊 Análise e Perfil de Canteiros (Aprendizado Não Supervisionado)")
-    try:
-        df_cluster = pd.read_csv('gestao_canteiros.csv')
+elif menu == "🚦 Patologia & Risco Estrutural":
+    st.title("🚦 Diagnóstico Patológico e Avaliação de Risco Estrutural")
+    
+    df_class = carregar_dados_classificacao()
+    if df_class is None:
+        st.error("⚠️ Arquivo 'inspecao_seguranca.csv' não encontrado.")
+    else:
+        aba_dados, aba_semaforo, aba_metricas = st.tabs(["📂 Histórico de Vistorias", "🚨 Simulador de Inspeção", "📊 Matriz de Decisão"])
         
-        # Criamos um nome fantasia (ID) para cada obra no gráfico
-        df_cluster['ID_Obra'] = ['Obra ' + str(i+1) for i in range(len(df_cluster))]
+        X_c = df_class[['Fissura_mm', 'Corrosao_mm', 'Idade_Estrutura_anos']]
+        y_c = df_class['Status_Risco']
         
-        # --- PASSO 1: PREPARAÇÃO DA IA ---
-        # Note que aqui não temos a variável 'y' (resposta). A IA vai descobrir os grupos sozinha.
-        X_cluster = df_cluster[['Consumo_Energia_kWh', 'Desperdicio_Material_%', 'Horas_Atraso']]
+        X_train_c, X_test_c, y_train_c, y_test_c = train_test_split(X_c, y_c, test_size=0.3, random_state=42, stratify=y_c)
         
-        # Configuramos a IA (KMeans) para procurar exatamente 3 grupos de perfis semelhantes
-        kmeans = KMeans(n_clusters=3, n_init=10, random_state=42)
-        
-        # Treina e ao mesmo tempo já cria a nova coluna classificando cada obra (1, 2 ou 3)
-        # .astype(str) transforma o número em texto para o Plotly separar bem as cores
-        df_cluster['Grupo_IA'] = kmeans.fit_predict(X_cluster).astype(str) 
-        
-        # Extraímos os 'centroides' (os pontos médios matemáticos de cada grupo)
-        centroides = kmeans.cluster_centers_
-        
-        aba_dados, aba_grafico = st.tabs(["📂 Base de Dados", "🗺️ Mapa de Clusters Interativo"])
+        # Árvore com profundidade controlada para evitar memorização indevida
+        modelo_patologia = DecisionTreeClassifier(max_depth=4, min_samples_split=4, random_state=42)
+        modelo_patologia.fit(X_train_c, y_train_c)
         
         with aba_dados:
-            st.dataframe(df_cluster, use_container_width=True)
+            df_view = df_class.copy()
+            labels_risco = {0: "🟢 Baixo / Seguro", 1: "🟡 Moderado / Monitorar", 2: "🔴 Crítico / Interdição"}
+            df_view['Diagnóstico'] = df_view['Status_Risco'].map(labels_risco)
+            st.dataframe(df_view, use_container_width=True)
             
-        with aba_grafico:
-            # Gráfico de dispersão interativo com Plotly
-            fig = px.scatter(
-                df_cluster, 
-                x='Consumo_Energia_kWh', y='Desperdicio_Material_%', 
-                color='Grupo_IA', # Pinta cada bolha conforme o grupo descoberto
-                hover_name='ID_Obra', # Nome que aparece ao passar o mouse
-                hover_data=['Horas_Atraso'], # Mostra dado extra no pop-up
-                color_discrete_sequence=['#440154', '#21918c', '#fde725']
+        with aba_semaforo:
+            st.markdown("#### Parâmetros Coletados em Campo:")
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                fissura = st.number_input("Abertura Máxima de Fissura (mm)", min_value=0.0, max_value=10.0, value=0.3, step=0.05, help="NBR 6118 estabelece limite de 0.2 a 0.4mm")
+            with c2:
+                corrosao = st.number_input("Perda Estimada de Seção / Armadura (mm)", min_value=0.0, max_value=15.0, value=1.0, step=0.1)
+            with c3:
+                idade = st.number_input("Idade da Estrutura (anos)", min_value=0, max_value=120, value=10, step=1)
+                
+            if st.button("Classificar Risco Estrutural", type="primary"):
+                amostra = pd.DataFrame({'Fissura_mm': [fissura], 'Corrosao_mm': [corrosao], 'Idade_Estrutura_anos': [idade]})
+                risco_pred = modelo_patologia.predict(amostra)[0]
+                
+                if risco_pred == 0:
+                    st.success("🟢 **ESTRUTURA CONFORME / MONITORAMENTO DE ROTINA**\nParâmetros dentro dos limites normativos.")
+                elif risco_pred == 1:
+                    st.warning("🟡 **ALERTA: PATOLOGIA EM EVOLUÇÃO**\nProgramar ensaio não-destrutivo (esclerometria/ultrassom) e estanqueidade.")
+                else:
+                    st.error("🔴 **RISCO CRÍTICO ESTRUTURAL: AÇÃO IMEDIATA**\nProvidenciar escoramento/interdição e projeto de reforço estrutural.")
+                    
+        with aba_metricas:
+            y_pred_c = modelo_patologia.predict(X_test_c)
+            acc = accuracy_score(y_test_c, y_pred_c)
+            st.metric("Acurácia Real em Teste", f"{acc * 100:.1f}%")
+            
+            matriz = confusion_matrix(y_test_c, y_pred_c)
+            nomes_cat = ["Seguro", "Monitorar", "Interditar"]
+            fig_mat = px.imshow(
+                matriz,
+                x=nomes_cat, y=nomes_cat,
+                labels=dict(x="Classificação da IA", y="Realidade de Campo", color="Contagem"),
+                text_auto=True, color_continuous_scale="Blues"
             )
-            
-            # Adiciona os X pretos marcando o "coração" (Centroide) de cada agrupamento
-            fig.add_trace(
-                go.Scatter(
-                    x=centroides[:, 0], y=centroides[:, 1], mode='markers',
-                    marker=dict(color='black', symbol='x', size=12, line=dict(width=2)),
-                    name='Ponto Central'
-                )
-            )
-            st.plotly_chart(fig, use_container_width=True)
-            st.info("⚠️ Nota Técnica: Em produção, seria fundamental aplicar 'StandardScaler' antes do KMeans, pois a escala da Energia (milhares) é muito maior que o Desperdício (dezenas).")
-            
-    except FileNotFoundError:
-        st.error("⚠️ Arquivo 'gestao_canteiros.csv' não encontrado.")
+            st.plotly_chart(fig_mat, use_container_width=True)
 
 # ====================================================================
-# MÓDULO 4: IA GENERATIVA (CHATBOT RAG)
+# MÓDULO 3: CLUSTERIZAÇÃO (CANTEIROS PADRONIZADOS COM STANDARDSCALER)
 # ====================================================================
-elif menu == "💬 Assistente RAG (Manutenção)":
-    st.title("💬 Assistente Virtual de Manutenção")
-    st.markdown("Chatbot conectado ao Manual Técnico via RAG (Retrieval-Augmented Generation).")
+elif menu == "📊 Clusterização & Performance de Obras":
+    st.title("📊 Agrupamento e Perfil de Canteiros de Obras")
+    st.caption("K-Means com normalização estatística Z-Score (`StandardScaler`)")
     
-    # 1. Painel de credenciais. O st.expander permite esconder essa caixa por segurança
-    with st.expander("⚙️ Configurações da API Azure"):
+    df_clust = carregar_dados_cluster()
+    if df_clust is None:
+        st.error("⚠️ Arquivo 'gestao_canteiros.csv' não encontrado.")
+    else:
+        df_clust['ID_Obra'] = ['Obra ' + str(i+1) for i in range(len(df_clust))]
+        variaveis_cluster = ['Consumo_Energia_kWh', 'Desperdicio_Material_%', 'Horas_Atraso']
+        
+        # 1. Normalização Fundamental para não distorcer o K-Means
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(df_clust[variaveis_cluster])
+        
+        # 2. Clusterização
+        kmeans = KMeans(n_clusters=3, n_init=10, random_state=42)
+        df_clust['Cluster_ID'] = kmeans.fit_predict(X_scaled)
+        
+        mapa_perfis = {
+            0: "🟢 Canteiro Eficiente / Alto Padrão",
+            1: "🟡 Desvio Operacional (Atenção)",
+            2: "🔴 Canteiro Crítico (Alto Desperdício/Atraso)"
+        }
+        df_clust['Perfil_Operacional'] = df_clust['Cluster_ID'].map(mapa_perfis)
+        
+        aba_dados_c, aba_mapa = st.tabs(["📂 Tabela de Indicadores", "🗺️ Mapa Multidimensional"])
+        
+        with aba_dados_c:
+            st.dataframe(df_clust[['ID_Obra', 'Consumo_Energia_kWh', 'Desperdicio_Material_%', 'Horas_Atraso', 'Perfil_Operacional']], use_container_width=True)
+            
+        with aba_mapa:
+            fig_cl = px.scatter_3d(
+                df_clust,
+                x='Consumo_Energia_kWh',
+                y='Desperdicio_Material_%',
+                z='Horas_Atraso',
+                color='Perfil_Operacional',
+                hover_name='ID_Obra',
+                title="Distribuição 3D dos Canteiros (Energia x Perda x Atraso)",
+                color_discrete_map={
+                    "🟢 Canteiro Eficiente / Alto Padrão": "#2ca02c",
+                    "🟡 Desvio Operacional (Atenção)": "#ff7f0e",
+                    "🔴 Canteiro Crítico (Alto Desperdício/Atraso)": "#d62728"
+                }
+            )
+            st.plotly_chart(fig_cl, use_container_width=True)
+
+# ====================================================================
+# MÓDULO 4: ASSISTENTE TÉCNICO (RAG / MANUTENÇÃO)
+# ====================================================================
+elif menu == "💬 Assistente Técnico de Manutenção":
+    st.title("💬 Assistente Especialista em Manutenção de Frotas")
+    st.caption("Suporte técnico imediato para operadores e mecânicos de campo")
+    
+    with st.expander("⚙️ Credenciais de Integração Azure OpenAI"):
         col1, col2 = st.columns(2)
         with col1:
-            api_key = st.text_input("🔑 Chave da API", type="password") # type="password" oculta os caracteres digitados
+            api_key = st.text_input("API Key", type="password")
         with col2:
-            endpoint = st.text_input("🔗 Endpoint", value="https://marcelomaffeis-05082026-resource.services.ai.azure.com/openai/v1")
-        modelo_azure = st.text_input("🧠 Nome do Deployment", value="gpt-4.1-mini")
-    
-    st.markdown("---")
-    
-    # 2. Injetando a Base de Conhecimento (Contexto)
-    try:
-        # Tenta abrir o arquivo TXT em modo leitura ('r') com codificação utf-8
-        with open('manual_falhas_maquinas.txt', 'r', encoding='utf-8') as arquivo:
-            base_conhecimento = arquivo.read()
-    except FileNotFoundError:
-        base_conhecimento = "ERRO: Arquivo não encontrado."
-        st.error(base_conhecimento)
-
-    # 3. Gerenciamento de Memória do Chat (Session State)
-    # Se for a primeira vez abrindo a página, inicializamos a memória
-    if "mensagens" not in st.session_state:
-        # Instrução 'system' é a regra mestre que a IA deve obedecer, incluindo o manual técnico
-        instrucao_sistema = f"""Você é um engenheiro sênior de manutenção. 
-        Responda as dúvidas baseando-se EXCLUSIVAMENTE neste manual técnico abaixo.
-        Se a resposta não estiver no manual, diga que precisa chamar o supervisor.
+            endpoint = st.text_input("Endpoint", value="https://marcelomaffeis-05082026-resource.services.ai.azure.com/openai/v1")
+        modelo_azure = st.text_input("Deployment Name", value="gpt-4.1-mini")
         
-        MANUAL TÉCNICO:
-        {base_conhecimento}
-        """
-        # Guardamos a regra na memória do Streamlit
-        st.session_state.mensagens = [{"role": "system", "content": instrucao_sistema}]
+    try:
+        with open('manual_falhas_maquinas.txt', 'r', encoding='utf-8') as f:
+            base_manual = f.read()
+    except FileNotFoundError:
+        base_manual = "MANUAL PADRÃO: Procedimentos de segurança operacional para escavadeiras, vibroacabadoras e usinas."
 
-    # 4. Desenhando o Chat na Tela
-    # Um laço de repetição (for) para mostrar todo o histórico guardado na memória
+    if "mensagens" not in st.session_state:
+        st.session_state.mensagens = [
+            {
+                "role": "system",
+                "content": f"""Você é o Engenheiro Especialista Chefe de Manutenção Mecânica da Ellenco.
+                Responda com foco em segurança do trabalho, produtividade de campo e passos práticos.
+                Utilize o manual abaixo como fonte prioritária de verdade:
+                
+                --- MANUAL ---
+                {base_manual}
+                """
+            }
+        ]
+
     for msg in st.session_state.mensagens:
-        if msg["role"] != "system": # Ignoramos o 'system' para não poluir a tela do usuário
-            with st.chat_message(msg["role"]): # Cria o balãozinho (usuário ou assistente)
+        if msg["role"] != "system":
+            with st.chat_message(msg["role"]):
                 st.markdown(msg["content"])
 
-    # 5. Interação (A barra de digitação inferior)
-    pergunta = st.chat_input("Ex: Minha grua está com alarme e bloqueada, o que eu faço?")
-    
+    pergunta = st.chat_input("Ex: Rolo compactador com superaquecimento hidráulico, qual o procedimento?")
     if pergunta:
         if not api_key:
-            st.warning("⚠️ Insira a Chave da API nas configurações acima para liberar o chat.")
+            st.warning("⚠️ Forneça a chave da API Azure nas configurações acima.")
         else:
-            # Mostra a pergunta do usuário na tela e salva na memória
+            st.session_state.mensagens.append({"role": "user", "content": pergunta})
             with st.chat_message("user"):
                 st.markdown(pergunta)
-            st.session_state.mensagens.append({"role": "user", "content": pergunta})
-            
-            # O assistente começa a pensar
+                
             with st.chat_message("assistant"):
-                with st.spinner("Consultando o manual técnico..."): # Mostra o ícone de carregamento
+                with st.spinner("Consultando manual de frotas..."):
                     try:
-                        # 1. Abre a conexão segura com a Nuvem Azure
                         cliente = OpenAI(base_url=endpoint, api_key=api_key)
-                        
-                        # 2. Envia a memória inteira (regras + conversa) e pede uma resposta
                         resposta = cliente.chat.completions.create(
                             model=modelo_azure,
-                            messages=st.session_state.mensagens
+                            messages=st.session_state.mensagens,
+                            temperature=0.2
                         )
-                        # 3. Extrai apenas o texto da resposta devolvida pela Nuvem
-                        texto_ia = resposta.choices[0].message.content
-                        
-                        # Mostra a resposta e salva na memória
-                        st.markdown(texto_ia)
-                        st.session_state.mensagens.append({"role": "assistant", "content": texto_ia})
-                        
-                    except Exception as e:
-                        st.error(f"Falha na comunicação com a IA: {e}")
+                        conteudo = resposta.choices[0].message.content
+                        st.markdown(conteudo)
+                        st.session_state.mensagens.append({"role": "assistant", "content": conteudo})
+                    except Exception as err:
+                        st.error(f"Erro na conexão com Azure OpenAI: {err}")
 
