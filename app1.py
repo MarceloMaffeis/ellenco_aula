@@ -363,3 +363,4 @@ elif menu == "💬 Assistente RAG (Manutenção)":
                         
                     except Exception as e:
                         st.error(f"Falha na comunicação com a IA: {e}")
+
