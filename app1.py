@@ -50,7 +50,7 @@ def carregar_dados_cluster():
 # ====================================================================
 # MENU LATERAL
 # ====================================================================
-st.sidebar.image("https://via.placeholder.com/250x70.png?text=ELLENCO+ENG", use_container_width=True)
+st.sidebar.image("ellenco.png", use_container_width=True)
 st.sidebar.title("🏗️ SmartBuilder IA")
 st.sidebar.caption("Plataforma de Engenharia Orientada a Dados")
 
