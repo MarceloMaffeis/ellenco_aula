@@ -385,120 +385,138 @@ elif menu == "📊 3. Clusterização (Gestão de Canteiros)":
     exibir_rodape_educacional()
 
 # ====================================================================
-# MÓDULO 4: DEEP LEARNING (FADIGA E DESGASTE ESTRUTURAL/FROTAS)
+# MÓDULO 4: DEEP LEARNING (REATIVO EM TEMPO REAL)
 # ====================================================================
 elif menu == "🧠 4. Deep Learning (TensorFlow / Keras)":
     st.title("🧠 Deep Learning: Previsão de Desgaste Estrutural e Pavimentos")
-    st.caption("Rede Neural Perceptron Multicamadas (MLP) para modelar degradação complexa e não-linear")
+    st.caption("Rede Neural Perceptron Multicamadas (MLP) com Inferência Reativa em Tempo Real")
     
     from sklearn.neural_network import MLPRegressor
     
-    st.markdown("""
-    **Cenário de Engenharia:**  
-    Na construção civil e rodovias, o desgaste de um pavimento ou equipamento depende de fatores cruzados não-lineares 
-    (ex: excesso de carga de caminhões basculantes somado à alta temperatura e umidade).  
-    Aqui, a Rede Neural aprende essas relações para prever o **Índice de Degradação (%)**.
-    """)
+    # 1. Função de Treinamento com Cache para resposta instantânea
+    @st.cache_resource
+    def treinar_rede_neural_padrao(epocas=120, lr=0.01, neuronios=32, ativacao='relu'):
+        np.random.seed(42)
+        n_amostras = 400
+        
+        # Variáveis de canteiro / rodovia
+        trafego = np.random.uniform(500, 10000, n_amostras)      # Eixos de caminhões/dia
+        carga = np.random.uniform(8.0, 25.0, n_amostras)          # Carga por eixo (toneladas)
+        umidade = np.random.uniform(10.0, 95.0, n_amostras)       # % Umidade do solo
+        temp = np.random.uniform(10.0, 48.0, n_amostras)          # Temperatura °C
+        
+        # Comportamento físico não-linear de fadiga de materiais
+        desgaste = (
+            (trafego / 1000.0) * 2.0 + 
+            ((carga / 10.0) ** 2.8) * 3.5 + 
+            (umidade * 0.15) + 
+            (temp * 0.25) + 
+            np.random.normal(0, 1.5, n_amostras)
+        )
+        desgaste = np.clip(desgaste, 0.0, 100.0)
+        
+        X = pd.DataFrame({
+            'Trafego_Eixos': trafego,
+            'Carga_Eixo_Ton': carga,
+            'Umidade_Solo_%': umidade,
+            'Temperatura_C': temp
+        })
+        y = desgaste
+        
+        scaler = StandardScaler()
+        X_norm = scaler.fit_transform(X)
+        
+        modelo = MLPRegressor(
+            hidden_layer_sizes=(neuronios, neuronios // 2),
+            activation=ativacao,
+            solver='adam',
+            learning_rate_init=lr,
+            max_iter=epocas,
+            random_state=42
+        )
+        modelo.fit(X_norm, y)
+        
+        return modelo, scaler, modelo.loss_curve_
+
+    aba_simulador_dl, aba_treino = st.tabs(["🧪 Simulador Interativo (Tempo Real)", "⚙️ Arquitetura & Treinamento da Rede"])
     
-    aba_treino, aba_simulador_dl = st.tabs(["⚙️ Treinamento da Rede", "🧪 Simulador em Tempo Real"])
-    
-    # Gerando base sintética calibrada de engenharia (300 ensaios)
-    np.random.seed(42)
-    n_amostras = 300
-    trafego_eixos = np.random.uniform(500, 10000, n_amostras)      # Eixos equivalentes de caminhões
-    peso_eixo_ton = np.random.uniform(8, 20, n_amostras)            # Carga por eixo (ton)
-    umidade_solo = np.random.uniform(10, 90, n_amostras)            # % Umidade
-    temp_ambiente = np.random.uniform(15, 45, n_amostras)           # Temperatura °C
-    
-    # Equação física não-linear de desgaste
-    desgaste_real = (
-        (trafego_eixos / 1000) * 1.5 + 
-        ((peso_eixo_ton / 10) ** 3) * 2.0 + 
-        (umidade_solo * 0.1) + 
-        (temp_ambiente * 0.2) + 
-        np.random.normal(0, 2, n_amostras)
-    )
-    desgaste_real = np.clip(desgaste_real, 0, 100) # Limita entre 0% e 100%
-    
-    X_dl = pd.DataFrame({
-        'Trafego_Eixos': trafego_eixos,
-        'Carga_Eixo_Ton': peso_eixo_ton,
-        'Umidade_Solo_%': umidade_solo,
-        'Temperatura_C': temp_ambiente
-    })
-    y_dl = desgaste_real
-    
-    scaler_dl = StandardScaler()
-    X_dl_norm = scaler_dl.fit_transform(X_dl)
-    
-    with aba_treino:
-        col1, col2 = st.columns(2)
-        with col1:
-            epocas = st.slider("Número de Épocas / Iterações de Treinamento", 30, 300, 100, step=10)
-            lr = st.select_slider("Taxa de Aprendizado (Learning Rate)", [0.001, 0.005, 0.01, 0.05], value=0.01)
-        with col2:
-            neuronios = st.slider("Quantidade de Neurônios na Camada Oculta", 8, 64, 32, step=8)
-            ativacao = st.selectbox("Função de Ativação Não-Linear", ["relu", "tanh", "logistic"])
-            
-        if st.button("Treinar Rede Neural Profunda", type="primary"):
-            with st.spinner("Ajustando pesos sinápticos via Backpropagation (Adam)..."):
-                modelo_mlp = MLPRegressor(
-                    hidden_layer_sizes=(neuronios, neuronios // 2),
-                    activation=ativacao,
-                    solver='adam',
-                    learning_rate_init=lr,
-                    max_iter=epocas,
-                    random_state=42
-                )
-                modelo_mlp.fit(X_dl_norm, y_dl)
-                st.session_state['modelo_mlp'] = modelo_mlp
-                st.session_state['scaler_dl'] = scaler_dl
-                
-                st.success("✅ Rede Neural Treinada com Sucesso!")
-                
-                df_loss = pd.DataFrame({
-                    'Época': range(1, len(modelo_mlp.loss_curve_) + 1),
-                    'Perda (Mean Squared Error)': modelo_mlp.loss_curve_
-                })
-                fig_loss = px.line(
-                    df_loss, x='Época', y='Perda (Mean Squared Error)',
-                    title="Curva de Otimização da Rede Neural (Decaimento do Erro na Obra)"
-                )
-                st.plotly_chart(fig_loss, use_container_width=True)
+    # Obtém o modelo ativo (sempre pronto e rápido)
+    modelo_ativo, scaler_ativo, loss_history = treinar_rede_neural_padrao()
 
     with aba_simulador_dl:
-        st.markdown("### Teste de Campo: Simular Desgaste com a Rede Neural")
-        if 'modelo_mlp' not in st.session_state:
-            st.info("👈 Primeiro treine a rede na aba **'⚙️ Treinamento da Rede'**.")
-        else:
-            c1, c2 = st.columns(2)
-            with c1:
-                in_trafego = st.slider("Volume de Tráfego Pesado (Veículos/dia)", 500, 10000, 4500)
-                in_carga = st.slider("Carga Média por Eixo (Toneladas)", 8.0, 25.0, 14.0, step=0.5)
-            with c2:
-                in_umid = st.slider("Umidade do Subleito / Solo (%)", 10, 95, 60)
-                in_temp = st.slider("Temperatura Média no Local (°C)", 10, 50, 32)
-                
-            ponto_novo = pd.DataFrame({
-                'Trafego_Eixos': [in_trafego],
-                'Carga_Eixo_Ton': [in_carga],
-                'Umidade_Solo_%': [in_umid],
-                'Temperatura_C': [in_temp]
-            })
-            ponto_norm = st.session_state['scaler_dl'].transform(ponto_novo)
-            desgaste_pred = st.session_state['modelo_mlp'].predict(ponto_norm)[0]
-            desgaste_pred = max(0.0, min(100.0, desgaste_pred))
+        st.markdown("### 🎛️ Ajuste os Parâmetros da Obra para Previsão Imediata:")
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            in_trafego = st.slider("Volume de Tráfego Pesado (Caminhões/dia)", 500, 10000, 3500, step=250)
+            in_carga = st.slider("Carga Média por Eixo (Toneladas)", 8.0, 25.0, 12.0, step=0.5, help="Norma DER/DNIT considera eixo padrão de 8.2 a 13 ton")
+        with c2:
+            in_umid = st.slider("Umidade do Subleito / Solo (%)", 10, 95, 45, step=5)
+            in_temp = st.slider("Temperatura Média no Local (°C)", 10, 50, 28, step=1)
             
-            st.markdown("---")
-            col_res1, col_res2 = st.columns(2)
-            col_res1.metric("Índice de Degradação Previsto", f"{desgaste_pred:.1f}%")
+        # Inferência Imediata (executa automaticamente a cada movimento do slider)
+        dados_entrada = pd.DataFrame({
+            'Trafego_Eixos': [in_trafego],
+            'Carga_Eixo_Ton': [in_carga],
+            'Umidade_Solo_%': [in_umid],
+            'Temperatura_C': [in_temp]
+        })
+        dados_norm = scaler_ativo.transform(dados_entrada)
+        desgaste_calculado = modelo_ativo.predict(dados_norm)[0]
+        desgaste_calculado = max(0.0, min(100.0, float(desgaste_calculado)))
+        
+        st.markdown("---")
+        
+        col_met1, col_met2 = st.columns([1, 1.5])
+        with col_met1:
+            st.metric(
+                label="Índice de Degradação / Fadiga Estimado", 
+                value=f"{desgaste_calculado:.1f}%",
+                delta=f"{'+' if desgaste_calculado > 50 else '-'}{abs(desgaste_calculado - 50):.1f}% da média",
+                delta_color="inverse"
+            )
             
-            if desgaste_pred < 40:
-                col_res2.success("🟢 **CONDIÇÃO BOA:** Pavimento/Equipamento estável.")
-            elif desgaste_pred < 70:
-                col_res2.warning("🟡 **MANUTENÇÃO PREVENTIVA:** Programar fresagem ou revisão.")
+        with col_met2:
+            if desgaste_calculado < 40:
+                st.success("🟢 **CONDIÇÃO EXCELENTE / ESTÁVEL**\nPavimento ou maquinário em ciclo de vida seguro. Manter monitoramento regular.")
+            elif desgaste_calculado < 70:
+                st.warning("🟡 **ALERTA: MANUTENÇÃO PREVENTIVA NECESSÁRIA**\nSinais de fadiga acelerada. Programar recapeamento ou revisão de suspensão/óleo.")
             else:
-                col_res2.error("🔴 **RISCO CRÍTICO DE RUPTURA:** Necessidade de intervenção imediata.")
+                st.error("🔴 **RISCO CRÍTICO DE COLAPSO ESTRUTURAL**\nFadiga extrema detectada pela Rede Neural. Necessidade de intervenção emergencial imediata!")
+                
+        # Barra visual de progresso de desgaste
+        st.progress(int(desgaste_calculado))
+
+    with aba_treino:
+        st.markdown("### 🧠 Personalizar Hiperparâmetros da Rede Neural")
+        st.write("Ajuste as configurações para ver como a taxa de aprendizado e o número de neurônios alteram a convergência.")
+        
+        col_t1, col_t2 = st.columns(2)
+        with col_t1:
+            epocas_opt = st.slider("Número de Épocas de Treinamento", 30, 300, 120, step=10)
+            lr_opt = st.select_slider("Taxa de Aprendizado (Learning Rate)", [0.001, 0.005, 0.01, 0.05], value=0.01)
+        with col_t2:
+            neuronios_opt = st.slider("Neurônios na Camada Oculta Principal", 8, 64, 32, step=8)
+            ativacao_opt = st.selectbox("Função de Ativação", ["relu", "tanh", "logistic"])
+            
+        if st.button("Re-treinar Rede Neural com Novos Hiperparâmetros", type="primary"):
+            st.cache_resource.clear() # Limpa o cache para forçar novo treino
+            with st.spinner("Treinando nova arquitetura neural..."):
+                modelo_ativo, scaler_ativo, loss_history = treinar_rede_neural_padrao(
+                    epocas=epocas_opt, lr=lr_opt, neuronios=neuronios_opt, ativacao=ativacao_opt
+                )
+            st.success("Rede Neural atualizada com sucesso!")
+            
+        # Gráfico da curva de perda
+        df_loss = pd.DataFrame({
+            'Época': range(1, len(loss_history) + 1),
+            'Função de Custo / Erro (MSE)': loss_history
+        })
+        fig_loss = px.line(
+            df_loss, x='Época', y='Função de Custo / Erro (MSE)',
+            title="Curva de Aprendizagem (Convergência dos Pesos Sinápticos via Backpropagation)"
+        )
+        st.plotly_chart(fig_loss, use_container_width=True)
 
     exibir_rodape_educacional()
 
