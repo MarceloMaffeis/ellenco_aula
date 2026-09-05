@@ -323,52 +323,56 @@ elif menu == "📊 3. Clusterização (Gestão de Canteiros)":
     exibir_rodape_educacional()
 
 # ====================================================================
-# MÓDULO 4: DEEP LEARNING (KERAS / TENSORFLOW)
+# MÓDULO 4: REDES NEURAIS ARTIFICIAIS (DEEP LEARNING / MLP)
 # ====================================================================
 elif menu == "🧠 4. Deep Learning (TensorFlow / Keras)":
-    st.title("🧠 Redes Neurais Artificiais com TensorFlow / Keras")
-    st.caption("Treinamento de Redes Perceptron Multicamadas (MLP) com Função de Custo e Épocas")
+    st.title("🧠 Redes Neurais Artificiais (Deep Learning)")
+    st.caption("Treinamento de Redes Perceptron Multicamadas (MLP) com Função de Custo e Iterações")
     
-    if tf is None:
-        st.error("⚠️ TensorFlow não instalado no ambiente. Execute `pip install tensorflow`.")
-    else:
-        col1, col2 = st.columns(2)
-        with col1:
-            epocas = st.slider("Número de Épocas (Epochs)", 10, 100, 35, step=5)
-            lr = st.select_slider("Taxa de Aprendizado (Learning Rate)", [0.001, 0.005, 0.01, 0.05], value=0.01)
-        with col2:
-            neuronios = st.slider("Neurônios na Camada Oculta", 8, 64, 16, step=8)
-            dropout = st.slider("Taxa de Regularização (Dropout)", 0.0, 0.5, 0.1)
+    from sklearn.neural_network import MLPRegressor
+    
+    st.markdown("### Treinamento de Rede Neural para Previsão Operacional")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        epocas = st.slider("Número Máximo de Iterações / Épocas", 20, 200, 80, step=10)
+        lr = st.select_slider("Taxa de Aprendizado (Learning Rate Inicial)", [0.001, 0.005, 0.01, 0.05], value=0.01)
+    with col2:
+        neuronios = st.slider("Neurônios na Camada Oculta", 8, 64, 16, step=8)
+        ativacao = st.selectbox("Função de Ativação", ["relu", "tanh", "logistic"])
 
-        if st.button("Treinar Rede Neural", type="primary"):
-            with st.spinner("Treinando arquitetura neural profunda..."):
-                np.random.seed(42)
-                X_s = np.random.rand(250, 3) * [1000, 100, 50]
-                y_s = (0.0005 * X_s[:, 0] + 0.003 * X_s[:, 1] + 0.01 * X_s[:, 2]) * 10
-                
-                sc = StandardScaler()
-                X_norm = sc.fit_transform(X_s)
-                
-                model = Sequential([
-                    Dense(neuronios, activation='relu', input_shape=(3,)),
-                    Dropout(dropout),
-                    Dense(neuronios // 2, activation='relu'),
-                    Dense(1, activation='linear')
-                ])
-                
-                model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss='mse')
-                hist = model.fit(X_norm, y_s, epochs=epocas, validation_split=0.2, verbose=0)
-                
-                st.success("✅ Rede Neural Treinada com Sucesso!")
-                
-                df_loss = pd.DataFrame({
-                    'Época': range(1, epocas + 1),
-                    'Perda no Treino (MSE)': hist.history['loss'],
-                    'Perda na Validação (Val MSE)': hist.history['val_loss']
-                })
-                fig_loss = px.line(df_loss, x='Época', y=['Perda no Treino (MSE)', 'Perda na Validação (Val MSE)'],
-                                   title="Curva de Otimização da Rede Neural (Decaimento do Erro Quadrático)")
-                st.plotly_chart(fig_loss, use_container_width=True)
+    if st.button("Treinar Rede Neural (MLP)", type="primary"):
+        with st.spinner("Ajustando pesos sinápticos e treinando a rede neural..."):
+            np.random.seed(42)
+            X_s = np.random.rand(300, 3) * [1000, 100, 50]
+            y_s = (0.0005 * X_s[:, 0] + 0.003 * X_s[:, 1] + 0.01 * X_s[:, 2]) * 10
+            
+            sc = StandardScaler()
+            X_norm = sc.fit_transform(X_s)
+            
+            # Arquitetura da Rede Neural Perceptron Multicamadas
+            rede_neural = MLPRegressor(
+                hidden_layer_sizes=(neuronios, neuronios // 2),
+                activation=ativacao,
+                solver='adam',
+                learning_rate_init=lr,
+                max_iter=epocas,
+                random_state=42
+            )
+            rede_neural.fit(X_norm, y_s)
+            
+            st.success("✅ Rede Neural Treinada com Sucesso!")
+            
+            # Gráfico de Perda (Loss Curve)
+            df_loss = pd.DataFrame({
+                'Iteração': range(1, len(rede_neural.loss_curve_) + 1),
+                'Função de Perda (Loss)': rede_neural.loss_curve_
+            })
+            fig_loss = px.line(
+                df_loss, x='Iteração', y='Função de Perda (Loss)',
+                title="Curva de Convergência do Gradiente (Decaimento do Erro Quadrático)"
+            )
+            st.plotly_chart(fig_loss, use_container_width=True)
 
     exibir_rodape_educacional()
 
