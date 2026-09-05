@@ -19,3 +19,4 @@ nltk>=3.8.1
 opencv-python-headless>=4.9.0.80
 # 5. IA Generativa e Conexão em Nuvem (OpenAI / Azure)
 openai>=1.14.0
+tensorflow
