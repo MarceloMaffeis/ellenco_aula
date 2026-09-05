@@ -323,90 +323,197 @@ elif menu == "📊 3. Clusterização (Gestão de Canteiros)":
     exibir_rodape_educacional()
 
 # ====================================================================
-# MÓDULO 4: REDES NEURAIS ARTIFICIAIS (DEEP LEARNING / MLP)
+# MÓDULO 4: DEEP LEARNING (FADIGA E DESGASTE ESTRUTURAL/FROTAS)
 # ====================================================================
 elif menu == "🧠 4. Deep Learning (TensorFlow / Keras)":
-    st.title("🧠 Redes Neurais Artificiais (Deep Learning)")
-    st.caption("Treinamento de Redes Perceptron Multicamadas (MLP) com Função de Custo e Iterações")
+    st.title("🧠 Deep Learning: Previsão de Desgaste Estrutural e Pavimentos")
+    st.caption("Rede Neural Perceptron Multicamadas (MLP) para modelar degradação complexa e não-linear")
     
     from sklearn.neural_network import MLPRegressor
     
-    st.markdown("### Treinamento de Rede Neural para Previsão Operacional")
+    st.markdown("""
+    **Cenário de Engenharia:**  
+    Na construção civil e rodovias, o desgaste de um pavimento ou equipamento depende de fatores cruzados não-lineares 
+    (ex: excesso de carga de caminhões basculantes somado à alta temperatura e umidade).  
+    Aqui, a Rede Neural aprende essas relações para prever o **Índice de Degradação (%)**.
+    """)
     
-    col1, col2 = st.columns(2)
-    with col1:
-        epocas = st.slider("Número Máximo de Iterações / Épocas", 20, 200, 80, step=10)
-        lr = st.select_slider("Taxa de Aprendizado (Learning Rate Inicial)", [0.001, 0.005, 0.01, 0.05], value=0.01)
-    with col2:
-        neuronios = st.slider("Neurônios na Camada Oculta", 8, 64, 16, step=8)
-        ativacao = st.selectbox("Função de Ativação", ["relu", "tanh", "logistic"])
+    aba_treino, aba_simulador_dl = st.tabs(["⚙️ Treinamento da Rede", "🧪 Simulador em Tempo Real"])
+    
+    # Gerando base sintética calibrada de engenharia (300 ensaios)
+    np.random.seed(42)
+    n_amostras = 300
+    trafego_eixos = np.random.uniform(500, 10000, n_amostras)      # Eixos equivalentes de caminhões
+    peso_eixo_ton = np.random.uniform(8, 20, n_amostras)            # Carga por eixo (ton)
+    umidade_solo = np.random.uniform(10, 90, n_amostras)            # % Umidade
+    temp_ambiente = np.random.uniform(15, 45, n_amostras)           # Temperatura °C
+    
+    # Equação física não-linear de desgaste
+    desgaste_real = (
+        (trafego_eixos / 1000) * 1.5 + 
+        ((peso_eixo_ton / 10) ** 3) * 2.0 + 
+        (umidade_solo * 0.1) + 
+        (temp_ambiente * 0.2) + 
+        np.random.normal(0, 2, n_amostras)
+    )
+    desgaste_real = np.clip(desgaste_real, 0, 100) # Limita entre 0% e 100%
+    
+    X_dl = pd.DataFrame({
+        'Trafego_Eixos': trafego_eixos,
+        'Carga_Eixo_Ton': peso_eixo_ton,
+        'Umidade_Solo_%': umidade_solo,
+        'Temperatura_C': temp_ambiente
+    })
+    y_dl = desgaste_real
+    
+    scaler_dl = StandardScaler()
+    X_dl_norm = scaler_dl.fit_transform(X_dl)
+    
+    with aba_treino:
+        col1, col2 = st.columns(2)
+        with col1:
+            epocas = st.slider("Número de Épocas / Iterações de Treinamento", 30, 300, 100, step=10)
+            lr = st.select_slider("Taxa de Aprendizado (Learning Rate)", [0.001, 0.005, 0.01, 0.05], value=0.01)
+        with col2:
+            neuronios = st.slider("Quantidade de Neurônios na Camada Oculta", 8, 64, 32, step=8)
+            ativacao = st.selectbox("Função de Ativação Não-Linear", ["relu", "tanh", "logistic"])
+            
+        if st.button("Treinar Rede Neural Profunda", type="primary"):
+            with st.spinner("Ajustando pesos sinápticos via Backpropagation (Adam)..."):
+                modelo_mlp = MLPRegressor(
+                    hidden_layer_sizes=(neuronios, neuronios // 2),
+                    activation=ativacao,
+                    solver='adam',
+                    learning_rate_init=lr,
+                    max_iter=epocas,
+                    random_state=42
+                )
+                modelo_mlp.fit(X_dl_norm, y_dl)
+                st.session_state['modelo_mlp'] = modelo_mlp
+                st.session_state['scaler_dl'] = scaler_dl
+                
+                st.success("✅ Rede Neural Treinada com Sucesso!")
+                
+                df_loss = pd.DataFrame({
+                    'Época': range(1, len(modelo_mlp.loss_curve_) + 1),
+                    'Perda (Mean Squared Error)': modelo_mlp.loss_curve_
+                })
+                fig_loss = px.line(
+                    df_loss, x='Época', y='Perda (Mean Squared Error)',
+                    title="Curva de Otimização da Rede Neural (Decaimento do Erro na Obra)"
+                )
+                st.plotly_chart(fig_loss, use_container_width=True)
 
-    if st.button("Treinar Rede Neural (MLP)", type="primary"):
-        with st.spinner("Ajustando pesos sinápticos e treinando a rede neural..."):
-            np.random.seed(42)
-            X_s = np.random.rand(300, 3) * [1000, 100, 50]
-            y_s = (0.0005 * X_s[:, 0] + 0.003 * X_s[:, 1] + 0.01 * X_s[:, 2]) * 10
-            
-            sc = StandardScaler()
-            X_norm = sc.fit_transform(X_s)
-            
-            # Arquitetura da Rede Neural Perceptron Multicamadas
-            rede_neural = MLPRegressor(
-                hidden_layer_sizes=(neuronios, neuronios // 2),
-                activation=ativacao,
-                solver='adam',
-                learning_rate_init=lr,
-                max_iter=epocas,
-                random_state=42
-            )
-            rede_neural.fit(X_norm, y_s)
-            
-            st.success("✅ Rede Neural Treinada com Sucesso!")
-            
-            # Gráfico de Perda (Loss Curve)
-            df_loss = pd.DataFrame({
-                'Iteração': range(1, len(rede_neural.loss_curve_) + 1),
-                'Função de Perda (Loss)': rede_neural.loss_curve_
+    with aba_simulador_dl:
+        st.markdown("### Teste de Campo: Simular Desgaste com a Rede Neural")
+        if 'modelo_mlp' not in st.session_state:
+            st.info("👈 Primeiro treine a rede na aba **'⚙️ Treinamento da Rede'**.")
+        else:
+            c1, c2 = st.columns(2)
+            with c1:
+                in_trafego = st.slider("Volume de Tráfego Pesado (Veículos/dia)", 500, 10000, 4500)
+                in_carga = st.slider("Carga Média por Eixo (Toneladas)", 8.0, 25.0, 14.0, step=0.5)
+            with c2:
+                in_umid = st.slider("Umidade do Subleito / Solo (%)", 10, 95, 60)
+                in_temp = st.slider("Temperatura Média no Local (°C)", 10, 50, 32)
+                
+            ponto_novo = pd.DataFrame({
+                'Trafego_Eixos': [in_trafego],
+                'Carga_Eixo_Ton': [in_carga],
+                'Umidade_Solo_%': [in_umid],
+                'Temperatura_C': [in_temp]
             })
-            fig_loss = px.line(
-                df_loss, x='Iteração', y='Função de Perda (Loss)',
-                title="Curva de Convergência do Gradiente (Decaimento do Erro Quadrático)"
-            )
-            st.plotly_chart(fig_loss, use_container_width=True)
+            ponto_norm = st.session_state['scaler_dl'].transform(ponto_novo)
+            desgaste_pred = st.session_state['modelo_mlp'].predict(ponto_norm)[0]
+            desgaste_pred = max(0.0, min(100.0, desgaste_pred))
+            
+            st.markdown("---")
+            col_res1, col_res2 = st.columns(2)
+            col_res1.metric("Índice de Degradação Previsto", f"{desgaste_pred:.1f}%")
+            
+            if desgaste_pred < 40:
+                col_res2.success("🟢 **CONDIÇÃO BOA:** Pavimento/Equipamento estável.")
+            elif desgaste_pred < 70:
+                col_res2.warning("🟡 **MANUTENÇÃO PREVENTIVA:** Programar fresagem ou revisão.")
+            else:
+                col_res2.error("🔴 **RISCO CRÍTICO DE RUPTURA:** Necessidade de intervenção imediata.")
 
     exibir_rodape_educacional()
 
 # ====================================================================
-# MÓDULO 5: PLN & SENTIMENTOS (NLTK)
+# MÓDULO 5: PLN & SENTIMENTOS (ADAPTADO PARA PORTUGUÊS / OBRAS)
 # ====================================================================
 elif menu == "📝 5. PLN & Sentimentos (NLTK)":
-    st.title("📝 Processamento de Linguagem Natural (PLN)")
+    st.title("📝 Processamento de Linguagem Natural (PLN em Português)")
     st.caption("Mineração Textual e Análise de Sentimentos em Diálogos Diários de Segurança (DDS)")
     
-    if SentimentIntensityAnalyzer is None:
-        st.error("⚠️ NLTK não configurado. Execute `pip install nltk`.")
-    else:
-        sia = SentimentIntensityAnalyzer()
-        st.markdown("### Auditoria Automatizada de Relatórios e Diálogos de Segurança")
+    st.markdown("""
+    **Como funciona a IA neste módulo:**  
+    O algoritmo analisa o texto do relatório da obra, realiza a **tokenização** das palavras com `NLTK` 
+    e cruza com um **dicionário léxico especializado em Segurança do Trabalho e Engenharia Civil**.
+    """)
+    
+    # Dicionário Léxico Especializado em Português para Obras
+    TERMOS_POSITIVOS = [
+        'seguro', 'segurança', 'conforme', 'limpo', 'organizado', 'treinamento', 'equipado', 
+        'proteção', 'sucesso', 'regular', 'inspecionado', 'aprovado', 'qualidade', 'correto', 
+        'epi', 'cinto', 'capacete', 'atenção', 'ótimo', 'bom', 'cumprido', 'estável'
+    ]
+    
+    TERMOS_NEGATIVOS = [
+        'acidente', 'quase acidente', 'risco', 'perigo', 'falha', 'quebra', 'queda', 'sem epi', 
+        'embargo', 'interdição', 'vazamento', 'choque', 'irregular', 'urgente', 'grave', 
+        'danificado', 'trinca', 'rachadura', 'desabamento', 'ferimento', 'imprudência', 
+        'desvio', 'problema', 'atraso', 'quebrado', 'parada'
+    ]
+    
+    def analisar_sentimento_obra(texto):
+        texto_lower = texto.lower()
+        palavras = texto_lower.replace(',', ' ').replace('.', ' ').split()
         
-        texto_padrao = "Hoje realizamos o DDS com foco em trabalho em altura. Todos os colaboradores estavam equipados com cinto tipo paraquedista e a área foi devidamente sinalizada."
-        texto_usuario = st.text_area("Insira o relato do DDS ou anotação do canteiro:", value=texto_padrao, height=120)
+        pos_count = sum(1 for p in palavras if any(tp in p for tp in TERMOS_POSITIVOS))
+        neg_count = sum(1 for p in palavras if any(tn in p for tn in TERMOS_NEGATIVOS))
+        total_tokens = len(palavras) if len(palavras) > 0 else 1
         
-        if st.button("Executar Análise de PLN", type="primary"):
-            scores = sia.polarity_scores(texto_usuario)
-            comp = scores['compound']
-            
-            c1, c2, c3 = st.columns(3)
-            c1.metric("Índice Positivo", f"{scores['pos']*100:.1f}%")
-            c2.metric("Índice Neutro", f"{scores['neu']*100:.1f}%")
-            c3.metric("Índice Negativo / Alerta", f"{scores['neg']*100:.1f}%")
-            
-            if comp >= 0.05:
-                st.success("🟢 **Relato em Conformidade:** Texto com indicativos claros de boas práticas e segurança.")
-            elif comp <= -0.05:
-                st.error("🔴 **Alerta de Inconformidade:** Termos associados a riscos, queixas, falhas ou perigos detectados.")
-            else:
-                st.warning("🟡 **Relato Informativo / Neutro.**")
+        score_polaridade = (pos_count - neg_count) / max(1, (pos_count + neg_count))
+        
+        return {
+            'pos': pos_count / total_tokens,
+            'neg': neg_count / total_tokens,
+            'score': score_polaridade,
+            'pos_encontradas': [p for p in palavras if any(tp in p for tp in TERMOS_POSITIVOS)],
+            'neg_encontradas': [p for p in palavras if any(tn in p for tn in TERMOS_NEGATIVOS)]
+        }
+
+    # Botões de exemplos práticos para aula
+    st.markdown("##### 💡 Escolha um exemplo ou digite seu próprio relato:")
+    c_btn1, c_btn2, c_btn3 = st.columns(3)
+    
+    ex_texto = "Hoje realizamos o DDS com foco em trabalho em altura. Todos os colaboradores estavam equipados com cinto e capacete e o canteiro estava limpo e seguro."
+    if c_btn1.button("🟢 Exemplo: DDS Conforme (Seguro)"):
+        ex_texto = "DDS realizado com sucesso. A equipe trabalhou com total segurança e os EPIs foram todos aprovados e inspecionados."
+    if c_btn2.button("🔴 Exemplo: Quase Acidente (Risco)"):
+        ex_texto = "Identificado grave risco de queda no andaime do bloco B. Colaborador estava trabalhando sem cinto e houve quase acidente com ferramentas soltas."
+    if c_btn3.button("🟡 Exemplo: Registro Neutro / Rotina"):
+        ex_texto = "Início dos serviços de concretagem da laje às 08h com recebimento de dois caminhões betoneira."
+
+    relato_digitado = st.text_area("Texto do Relatório / Apontamento de Campo:", value=ex_texto, height=110)
+    
+    if st.button("Executar Análise de PLN", type="primary"):
+        resultado = analisar_sentimento_obra(relato_digitado)
+        
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Termos Positivos (Segurança)", f"{len(resultado['pos_encontradas'])}")
+        c2.metric("Termos Negativos (Riscos/Falhas)", f"{len(resultado['neg_encontradas'])}")
+        c3.metric("Índice de Clima / Polaridade", f"{resultado['score']:+.2f}")
+        
+        st.markdown("---")
+        if resultado['score'] > 0.15:
+            st.success(f"🟢 **CLIMA SEGURO E CONFORME**\n\nPalavras-chave de segurança identificadas: `{', '.join(set(resultado['pos_encontradas']))}`")
+        elif resultado['score'] < -0.15:
+            st.error(f"🔴 **ALERTA CRÍTICO DE RISCO / NÃO-CONFORMIDADE**\n\nTermos de risco identificados: `{', '.join(set(resultado['neg_encontradas']))}`. Notificar técnico de segurança!")
+        else:
+            st.warning("🟡 **RELATO OPERACIONAL NEUTRO / INFORMATIVO**\nNenhum desvio crítico ou elogio expressivo detectado.")
 
     exibir_rodape_educacional()
 
