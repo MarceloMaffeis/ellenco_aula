@@ -1,9 +1,21 @@
-streamlit
-pandas
-matplotlib
-seaborn
-plotly
-scikit-learn
-openai
-sklearn
-PIL
+# Interface Gráfica e Dashboards
+streamlit>=1.32.0
+# Manipulação de Dados e Computação Numérica
+pandas>=2.1.0
+numpy>=1.24.0,<2.0.0
+# Visualização de Dados Interativa
+plotly>=5.19.0
+matplotlib>=3.8.0
+seaborn>=0.13.0
+# Manipulação de Imagens
+Pillow>=10.2.0
+# 1. Machine Learning Clássico (Supervisionado e Não-Supervisionado)
+scikit-learn>=1.4.0
+# 2. Deep Learning e Redes Neurais (Keras / TensorFlow)
+tensorflow>=2.15.0
+# 3. Processamento de Linguagem Natural (PLN)
+nltk>=3.8.1
+# 4. Visão Computacional (Versão Headless recomendada para Nuvem/Streamlit)
+opencv-python-headless>=4.9.0.80
+# 5. IA Generativa e Conexão em Nuvem (OpenAI / Azure)
+openai>=1.14.0
